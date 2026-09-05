@@ -1,5 +1,5 @@
 # Aegis — AI Risk Manager
-### Razorpay /buildathon 2026 — Track 02: AI Risk Manager
+
 
 > **"Fraud detection that shows its work."**  
 > Aegis scores every transaction with calibrated risk probabilities, flags fraud spikes in real time, and assembles submission-ready chargeback evidence automatically — with precision, recall, and false-positive cost measured openly on a held-out test set.  
