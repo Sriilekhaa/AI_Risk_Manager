@@ -17,11 +17,13 @@ from spike_detector import FraudSpikeDetector
 from chargeback_responder import ChargebackEvidenceResponder
 from evaluation import ModelEvaluator
 from audit_ledger import AuditLedger
+from copilot import RiskCopilot
+from webhooks import RazorpayWebhookProcessor
 
 app = FastAPI(
     title="Aegis AI Risk Manager",
     description="Razorpay /buildathon 2026 Track 02 — Strictly Defense-Only AI Risk Telemetry Engine",
-    version="2.0.0"
+    version="2.1.0"
 )
 
 app.add_middleware(
@@ -55,7 +57,24 @@ for t in train_pool[-35:]:
     recent_live_txns.insert(0, merged)
 
 disputes_list = chargeback_responder.get_or_create_disputes(train_pool + held_out_test_pool)
-print(f"Aegis initialized with {len(recent_live_txns)} live feed txns, {len(disputes_list)} disputes.")
+
+copilot = RiskCopilot(
+    risk_engine=risk_engine,
+    evaluator=evaluator,
+    spike_detector=spike_detector,
+    chargeback_responder=chargeback_responder,
+    audit_ledger=audit_ledger
+)
+
+webhook_processor = RazorpayWebhookProcessor(
+    risk_engine=risk_engine,
+    spike_detector=spike_detector,
+    chargeback_responder=chargeback_responder,
+    audit_ledger=audit_ledger,
+    live_txns_feed=recent_live_txns
+)
+
+print(f"Aegis initialized with {len(recent_live_txns)} live feed txns, {len(disputes_list)} disputes, copilot, and webhook engine.")
 
 # -------------------------------------------------------------
 # Pydantic Schemas
@@ -77,6 +96,14 @@ class CustomScoreRequest(BaseModel):
 
 class AcknowledgeSpikeRequest(BaseModel):
     notes: Optional[str] = "Approved step-up 3DS challenge. Defense-only policy verified."
+
+class CopilotQueryRequest(BaseModel):
+    query: str
+    context: Optional[Dict[str, Any]] = None
+
+class WebhookIngestRequest(BaseModel):
+    payload: Dict[str, Any]
+    signature: Optional[str] = None
 
 # -------------------------------------------------------------
 # Endpoints
@@ -257,3 +284,36 @@ def get_compliance():
 @app.get("/api/audit")
 def get_audit(limit: int = 50, event_type: Optional[str] = None):
     return audit_ledger.get_entries(limit=limit, event_type=event_type)
+
+# -------------------------------------------------------------
+# AI Risk Analyst Co-Pilot Endpoints
+# -------------------------------------------------------------
+@app.post("/api/copilot/query")
+def copilot_query(req: CopilotQueryRequest):
+    result = copilot.process_query(req.query, req.context)
+    return result
+
+@app.get("/api/copilot/suggestions")
+def copilot_suggestions():
+    return {
+        "suggestions": [
+            "Why was this transaction flagged as high risk?",
+            "Draft arbitration rebuttal for dispute citing 3DS liability shift",
+            "Explain the false-positive cost curve and optimal threshold",
+            "How does Aegis guarantee zero autonomous blocking?",
+            "What active fraud spikes are currently tracked on the radar?"
+        ]
+    }
+
+# -------------------------------------------------------------
+# Razorpay Webhook Live Simulator Endpoints
+# -------------------------------------------------------------
+@app.get("/api/webhooks/presets")
+def get_webhook_presets():
+    return webhook_processor.get_sample_presets()
+
+@app.post("/api/webhooks/razorpay")
+def ingest_razorpay_webhook(req: WebhookIngestRequest):
+    result = webhook_processor.process_webhook(req.payload, req.signature)
+    return result
+

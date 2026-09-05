@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   ShieldCheck
 } from 'lucide-react';
+import RazorpayWebhookSimulator from './RazorpayWebhookSimulator';
 
 export default function LiveScoringFeed({ transactions, onScoreCustom, onRefresh }) {
   const [filterLevel, setFilterLevel] = useState('ALL');
@@ -22,6 +23,7 @@ export default function LiveScoringFeed({ transactions, onScoreCustom, onRefresh
   const [selectedTxn, setSelectedTxn] = useState(null);
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
+  const [isWebhookModalOpen, setIsWebhookModalOpen] = useState(false);
 
   // Custom Form
   const [customForm, setCustomForm] = useState({
@@ -110,16 +112,24 @@ export default function LiveScoringFeed({ transactions, onScoreCustom, onRefresh
 
         <div className="flex items-center gap-2.5">
           <button
+            onClick={() => setIsWebhookModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-mono font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <span>⚡ Razorpay Webhook Simulator</span>
+          </button>
+
+          <button
             onClick={() => setShowCustomModal(true)}
-            className="btn-gold-glow py-2 px-4 text-xs font-semibold"
+            className="btn-gold-glow py-2 px-4 text-xs font-semibold cursor-pointer"
           >
             <Sliders className="w-3.5 h-3.5 fill-black text-black" />
-            <span>Test Custom Transaction</span>
+            <span>Score Custom</span>
           </button>
 
           <button
             onClick={onRefresh}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 transition-colors"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 transition-colors cursor-pointer"
             title="Refresh stream"
           >
             <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
@@ -547,6 +557,15 @@ export default function LiveScoringFeed({ transactions, onScoreCustom, onRefresh
           </div>
         </div>
       )}
+
+      {/* Razorpay Webhook Live Simulator Modal */}
+      <RazorpayWebhookSimulator
+        isOpen={isWebhookModalOpen}
+        onClose={() => setIsWebhookModalOpen(false)}
+        onWebhookProcessed={() => {
+          if (onRefresh) onRefresh();
+        }}
+      />
     </div>
   );
 }

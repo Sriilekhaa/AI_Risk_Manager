@@ -5,6 +5,7 @@ import SpikeDetectorView from './components/SpikeDetectorView';
 import ChargebackEvidenceView from './components/ChargebackEvidenceView';
 import EvaluationDashboard from './components/EvaluationDashboard';
 import ComplianceAuditView from './components/ComplianceAuditView';
+import CopilotDrawer from './components/CopilotDrawer';
 import { 
   Shield, 
   Activity, 
@@ -13,7 +14,8 @@ import {
   Target, 
   Lock, 
   ArrowLeft,
-  X
+  X,
+  Bot
 } from 'lucide-react';
 
 const API_BASE = 'http://localhost:8001';
@@ -21,6 +23,7 @@ const API_BASE = 'http://localhost:8001';
 export default function App() {
   const [activeView, setActiveView] = useState('landing'); // 'landing' or 'console'
   const [consoleTab, setConsoleTab] = useState('live_feed'); // 'live_feed', 'spikes', 'chargebacks', 'evaluation', 'compliance'
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
   const [transactions, setTransactions] = useState([]);
   const [spikes, setSpikes] = useState([]);
@@ -223,6 +226,14 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsCopilotOpen(true)}
+                className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-mono font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              >
+                <Bot className="w-3.5 h-3.5 text-amber-400" />
+                <span>AI Co-Pilot</span>
+              </button>
+
               <span className="hidden sm:inline text-[11px] font-mono text-emerald-400 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
                 FastAPI : 8001
@@ -279,6 +290,23 @@ export default function App() {
           </main>
         </div>
       )}
+
+      {/* Floating AI Risk Ops Co-Pilot Trigger */}
+      <button
+        onClick={() => setIsCopilotOpen(true)}
+        className="fixed bottom-6 right-6 z-40 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-bold text-xs font-mono shadow-2xl shadow-amber-500/30 flex items-center gap-2 border border-amber-300/40 cursor-pointer transition-all hover:scale-105"
+        title="Open Aegis AI Risk Ops Co-Pilot"
+      >
+        <Bot className="w-4 h-4 text-black" />
+        <span>Aegis Co-Pilot</span>
+        <span className="w-2 h-2 rounded-full bg-emerald-950 border border-emerald-400 animate-pulse"></span>
+      </button>
+
+      {/* Aegis AI Risk Analyst Co-Pilot Drawer */}
+      <CopilotDrawer
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+      />
     </div>
   );
 }

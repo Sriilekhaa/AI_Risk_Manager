@@ -9,15 +9,18 @@ import {
   FileCheck, 
   Check,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Printer
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import DisputeDossierModal from './DisputeDossierModal';
 
 export default function ChargebackEvidenceView({ disputes, onGenerateEvidence, onSubmitDispute }) {
   const [selectedDispute, setSelectedDispute] = useState(null);
   const [evidenceBundle, setEvidenceBundle] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDossierModalOpen, setIsDossierModalOpen] = useState(false);
 
   const handleOpenDispute = async (dispute) => {
     setSelectedDispute(dispute);
@@ -286,27 +289,45 @@ export default function ChargebackEvidenceView({ disputes, onGenerateEvidence, o
                     Aegis auto-assembles evidence. Human operator authorizes submission to the gateway dispute portal.
                   </div>
 
-                  {selectedDispute.status === 'SUBMITTED_TO_GATEWAY' ? (
-                    <div className="px-3.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold flex items-center gap-1.5 shrink-0">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      Submitted to Gateway
-                    </div>
-                  ) : (
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
-                      onClick={handleApproveAndSubmit}
-                      disabled={isSubmitting}
-                      className="btn-gold-glow py-2 px-5 text-xs font-bold shrink-0 cursor-pointer"
+                      onClick={() => setIsDossierModalOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-mono text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-white/10 shadow-sm"
                     >
-                      <Send className="w-3.5 h-3.5 fill-black text-black" />
-                      {isSubmitting ? 'Submitting...' : 'Approve & Submit Dispute →'}
+                      <Printer className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Export Official Pack (PDF)</span>
                     </button>
-                  )}
+
+                    {selectedDispute.status === 'SUBMITTED_TO_GATEWAY' ? (
+                      <div className="px-3.5 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold flex items-center gap-1.5 shrink-0">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Submitted to Gateway
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleApproveAndSubmit}
+                        disabled={isSubmitting}
+                        className="btn-gold-glow py-2 px-5 text-xs font-bold shrink-0 cursor-pointer"
+                      >
+                        <Send className="w-3.5 h-3.5 fill-black text-black" />
+                        {isSubmitting ? 'Submitting...' : 'Approve & Submit Dispute →'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : null}
           </div>
         </div>
       )}
+
+      {/* Official Arbitration Dispute Dossier Print / PDF Modal */}
+      <DisputeDossierModal
+        isOpen={isDossierModalOpen}
+        onClose={() => setIsDossierModalOpen(false)}
+        dispute={selectedDispute}
+        bundle={evidenceBundle}
+      />
     </div>
   );
 }
